@@ -1,3 +1,9 @@
+using Microsoft.AspNetCore.Connections;
+using NetRabbitmq.Shared;
+using RabbitMQ.Client;
+using System.Text;
+using System.Text.Json;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -14,28 +20,32 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
 
-app.MapGet("/weatherforecast", () =>
+app.MapPost("/send", (string bodydto) =>
 {
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateTime.Now.AddDays(index),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
+    var factory = new ConnectionFactory() { HostName = "localhost" };
+    using (var connection = factory.CreateConnection())
+    using (var channel = connection.CreateModel())
+    {
+        channel.QueueDeclare(queue: "task_queue",
+                             durable: true,
+                             exclusive: false,
+                             autoDelete: false,
+                             arguments: null);
+        var message = new MessageModel(bodydto);
+        var json = JsonSerializer.Serialize(message);
+        var body = Encoding.UTF8.GetBytes(json);
+
+        var properties = channel.CreateBasicProperties();
+        properties.Persistent = true;
+
+        channel.BasicPublish(exchange: "",
+                             routingKey: "task_queue",
+                             basicProperties: properties,
+                             body: body);
+    }
+    return Results.Ok();
 })
-.WithName("GetWeatherForecast");
+.WithName("SendMessage");
 
 app.Run();
-
-internal record WeatherForecast(DateTime Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
