@@ -23,7 +23,7 @@ if (app.Environment.IsDevelopment())
 
 app.MapPost("/send", (string bodydto) =>
 {
-    var factory = new ConnectionFactory() { HostName = "localhost" };
+    var factory = new ConnectionFactory() { HostName = "messageBroker" };
     using (var connection = factory.CreateConnection())
     using (var channel = connection.CreateModel())
     {

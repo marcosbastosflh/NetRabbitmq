@@ -1,0 +1,33 @@
+version: '3.4'
+
+services:
+  rabbit:
+    image: rabbitmq:3.11.4-management-alpine
+    container_name: rabbit
+    hostname: messageBroker
+    networks: 
+      - netrabbitmq
+    ports: 
+      - 15672:15672
+      - 5672:5672
+
+  netrabbitmq.api:
+    image: ${DOCKER_REGISTRY-}netrabbitmqapi
+    networks: 
+      - netrabbitmq
+    depends_on: [rabbit]
+    build:
+      context: .
+      dockerfile: NetRabbitmq.Api/Dockerfile
+
+  netrabbitmq.worker:
+    image: ${DOCKER_REGISTRY-}netrabbitmqworker
+    networks: 
+      - netrabbitmq
+    depends_on: [rabbit]
+    build:
+      context: .
+      dockerfile: NetRabbitmq.Worker/Dockerfile
+
+networks:
+  netrabbitmq:

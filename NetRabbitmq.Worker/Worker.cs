@@ -17,7 +17,7 @@ namespace NetRabbitmq.Worker
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            var factory = new ConnectionFactory() { HostName = "localhost" };
+            var factory = new ConnectionFactory() { HostName = "messageBroker" };
             using (var connection = factory.CreateConnection())
             using (var channel = connection.CreateModel())
             {

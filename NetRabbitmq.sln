@@ -3,16 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.3.32811.315
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetRabbitmq.Api", "NetRabbitmq.Api\NetRabbitmq.Api.csproj", "{8E32FA96-3993-4642-BDE9-E192C8893B06}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetRabbitmq.Api", "NetRabbitmq.Api\NetRabbitmq.Api.csproj", "{8E32FA96-3993-4642-BDE9-E192C8893B06}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetRabbitmq.Shared", "NetRabbitmq.Shared\NetRabbitmq.Shared.csproj", "{2174BEAC-3B96-493A-9F4B-F67C38B9B510}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetRabbitmq.Shared", "NetRabbitmq.Shared\NetRabbitmq.Shared.csproj", "{2174BEAC-3B96-493A-9F4B-F67C38B9B510}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetRabbitmq.Worker", "NetRabbitmq.Worker\NetRabbitmq.Worker.csproj", "{5C03DC9A-40DE-4E5F-A66B-D4B934A4589B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetRabbitmq.Worker", "NetRabbitmq.Worker\NetRabbitmq.Worker.csproj", "{5C03DC9A-40DE-4E5F-A66B-D4B934A4589B}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{0186BA59-835D-47D1-A42F-74AD3A7B47EE}"
-	ProjectSection(SolutionItems) = preProject
-		..\..\..\..\..\Projetos\Docker\RabbitMQ\docker-compose.yml = ..\..\..\..\..\Projetos\Docker\RabbitMQ\docker-compose.yml
-	EndProjectSection
+Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{BB9F5A69-193B-4475-BD10-72C47CE922C4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -32,6 +29,10 @@ Global
 		{5C03DC9A-40DE-4E5F-A66B-D4B934A4589B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5C03DC9A-40DE-4E5F-A66B-D4B934A4589B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5C03DC9A-40DE-4E5F-A66B-D4B934A4589B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BB9F5A69-193B-4475-BD10-72C47CE922C4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BB9F5A69-193B-4475-BD10-72C47CE922C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BB9F5A69-193B-4475-BD10-72C47CE922C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BB9F5A69-193B-4475-BD10-72C47CE922C4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
