@@ -4,7 +4,7 @@ services:
   rabbit:
     image: rabbitmq:3.11.4-management-alpine
     container_name: rabbit
-    hostname: messageBroker
+    hostname: rabbit_srv
     networks: 
       - netrabbitmq
     ports: 
@@ -19,6 +19,8 @@ services:
     build:
       context: .
       dockerfile: NetRabbitmq.Api/Dockerfile
+    environment:
+      - DOTNET_RUNNING_IN_CONTAINER=true
 
   netrabbitmq.worker:
     image: ${DOCKER_REGISTRY-}netrabbitmqworker
@@ -28,6 +30,8 @@ services:
     build:
       context: .
       dockerfile: NetRabbitmq.Worker/Dockerfile
+    environment:
+      - DOTNET_RUNNING_IN_CONTAINER=true
 
 networks:
   netrabbitmq:

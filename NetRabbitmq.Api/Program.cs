@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Connections;
 using NetRabbitmq.Shared;
 using RabbitMQ.Client;
 using System.Text;
@@ -23,7 +22,10 @@ if (app.Environment.IsDevelopment())
 
 app.MapPost("/send", (string bodydto) =>
 {
-    var factory = new ConnectionFactory() { HostName = "messageBroker" };
+    string? isDOcker = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER");
+    var host = String.IsNullOrEmpty(isDOcker) ? "localhost" : "rabbit_srv";
+
+    var factory = new ConnectionFactory() { HostName = host };
     using (var connection = factory.CreateConnection())
     using (var channel = connection.CreateModel())
     {

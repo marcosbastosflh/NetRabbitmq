@@ -17,7 +17,10 @@ namespace NetRabbitmq.Worker
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            var factory = new ConnectionFactory() { HostName = "messageBroker" };
+            string? isDOcker = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER");
+            var host = String.IsNullOrEmpty(isDOcker) ? "localhost" : "rabbit_srv";
+
+            var factory = new ConnectionFactory() { HostName = host };
             using (var connection = factory.CreateConnection())
             using (var channel = connection.CreateModel())
             {
@@ -41,7 +44,7 @@ namespace NetRabbitmq.Worker
                         var body = ea.Body.ToArray();
                         var message = Encoding.UTF8.GetString(body);
                         var obj = JsonSerializer.Deserialize<MessageModel>(message);
-                        _logger.LogInformation(" [x] Received {0} - {1}", obj.Id, obj.Body);
+                        _logger.LogInformation(" [x] Received {0}", JsonSerializer.Serialize(obj));
                         channel.BasicAck(deliveryTag: ea.DeliveryTag, multiple: false);
                     };
                     channel.BasicConsume(queue: "task_queue",
