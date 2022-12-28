@@ -1,4 +1,7 @@
+using Microsoft.Extensions.Options;
+using MongoDB.Driver;
 using NetRabbitmq.Shared;
+using NetRabbitmq.Worker.Models;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System.Text;
@@ -9,10 +12,15 @@ namespace NetRabbitmq.Worker
     public class Worker : BackgroundService
     {
         private readonly ILogger<Worker> _logger;
+        private readonly IMongoCollection<MessageModel> _messageCollection;
 
-        public Worker(ILogger<Worker> logger)
+        public Worker(ILogger<Worker> logger, IOptions<MessageDatabaseSettings> dabaseSettings)
         {
             _logger = logger;
+            // TODO: fix localhost on docker
+            var mongoClient = new MongoClient(dabaseSettings.Value.ConnectionString);
+            var mongoDatabase = mongoClient.GetDatabase(dabaseSettings.Value.DatabaseName);
+            _messageCollection = mongoDatabase.GetCollection<MessageModel>("task_queue");
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -44,6 +52,9 @@ namespace NetRabbitmq.Worker
                         var body = ea.Body.ToArray();
                         var message = Encoding.UTF8.GetString(body);
                         var obj = JsonSerializer.Deserialize<MessageModel>(message);
+
+                        _messageCollection.InsertOneAsync(obj);
+
                         _logger.LogInformation(" [x] Received {0}", JsonSerializer.Serialize(obj));
                         channel.BasicAck(deliveryTag: ea.DeliveryTag, multiple: false);
                     };

@@ -11,6 +11,18 @@ services:
       - 15672:15672
       - 5672:5672
 
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    hostname: mongodb_srv
+    restart: unless-stopped
+    networks:
+      - netrabbitmq
+    ports:
+      - 27017:27017
+    environment: 
+      MONGO_INITDB_DATABASE: message
+
   netrabbitmq.api:
     image: ${DOCKER_REGISTRY-}netrabbitmqapi
     networks: 
