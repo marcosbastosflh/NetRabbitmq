@@ -10,40 +10,72 @@ services:
     ports: 
       - 15672:15672
       - 5672:5672
+    healthcheck:
+      test: rabbitmq-diagnostics check_port_connectivity
+      interval: 30s
+      timeout: 30s
+      retries: 10
 
-  mongodb:
+  mongo:
     image: mongo:latest
-    container_name: mongodb
+    container_name: mongo
     hostname: mongodb_srv
-    restart: unless-stopped
     networks:
       - netrabbitmq
     ports:
       - 27017:27017
     environment: 
       MONGO_INITDB_DATABASE: message
+    healthcheck:
+      test: ["CMD","mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    
+  mongoexpress:
+    image: mongo-express:latest
+    container_name: mongoexpress
+    hostname: mongoexpress_srv
+    networks:
+      - netrabbitmq
+    ports:
+      - 8081:8081
+    environment:
+      ME_CONFIG_BASICAUTH_USERNAME: admin
+      ME_CONFIG_BASICAUTH_PASSWORD: admin
+      ME_CONFIG_MONGODB_SERVER: mongo
+    depends_on:
+      mongo:
+        condition: service_healthy
 
   netrabbitmq.api:
     image: ${DOCKER_REGISTRY-}netrabbitmqapi
     networks: 
       - netrabbitmq
-    depends_on: [rabbit]
+    depends_on: 
+      rabbit:
+        condition: service_healthy
     build:
       context: .
       dockerfile: NetRabbitmq.Api/Dockerfile
     environment:
-      - DOTNET_RUNNING_IN_CONTAINER=true
+      DOTNET_RUNNING_IN_CONTAINER: true
 
   netrabbitmq.worker:
     image: ${DOCKER_REGISTRY-}netrabbitmqworker
     networks: 
       - netrabbitmq
-    depends_on: [rabbit]
+    depends_on:
+      rabbit:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
     build:
       context: .
       dockerfile: NetRabbitmq.Worker/Dockerfile
     environment:
-      - DOTNET_RUNNING_IN_CONTAINER=true
+      DOTNET_RUNNING_IN_CONTAINER: true
 
 networks:
   netrabbitmq:
