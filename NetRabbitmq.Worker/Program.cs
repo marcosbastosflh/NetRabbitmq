@@ -1,11 +1,12 @@
+using NetRabbitmq.Shared;
 using NetRabbitmq.Worker;
-using NetRabbitmq.Worker.Models;
 
 IHost host = Host.CreateDefaultBuilder(args)
     .ConfigureServices((hostContext, services) =>
     {
         IConfiguration configuration = hostContext.Configuration;
-        services.Configure<MessageDatabaseSettings>(configuration.GetSection(nameof(MessageDatabaseSettings)));
+        services.Configure<MongoDatabaseSettings>(configuration.GetSection(nameof(MongoDatabaseSettings)));
+        services.Configure<RabbitMQSettings>(configuration.GetSection(nameof(RabbitMQSettings)));
         services.AddHostedService<Worker>();
     })
     .Build();

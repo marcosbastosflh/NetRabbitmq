@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Options;
 using NetRabbitmq.Shared;
 using RabbitMQ.Client;
 using System.Text;
@@ -22,14 +23,13 @@ if (app.Environment.IsDevelopment())
 
 app.MapPost("/send", (string bodydto) =>
 {
-    string? isDOcker = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER");
-    var host = String.IsNullOrEmpty(isDOcker) ? "localhost" : "rabbit_srv";
+    var rabbitMQSettings = builder.Configuration.GetSection("RabbitMQSettings").Get<RabbitMQSettings>();
 
-    var factory = new ConnectionFactory() { HostName = host };
+    var factory = new ConnectionFactory() { HostName = rabbitMQSettings.Host };
     using (var connection = factory.CreateConnection())
     using (var channel = connection.CreateModel())
     {
-        channel.QueueDeclare(queue: "task_queue",
+        channel.QueueDeclare(queue: rabbitMQSettings.Queue,
                              durable: true,
                              exclusive: false,
                              autoDelete: false,
@@ -42,7 +42,7 @@ app.MapPost("/send", (string bodydto) =>
         properties.Persistent = true;
 
         channel.BasicPublish(exchange: "",
-                             routingKey: "task_queue",
+                             routingKey: rabbitMQSettings.Queue,
                              basicProperties: properties,
                              body: body);
     }

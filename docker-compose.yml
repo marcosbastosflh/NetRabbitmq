@@ -60,7 +60,7 @@ services:
       context: .
       dockerfile: NetRabbitmq.Api/Dockerfile
     environment:
-      DOTNET_RUNNING_IN_CONTAINER: true
+      RabbitMQSettings__Host: rabbit_srv
 
   netrabbitmq.worker:
     image: ${DOCKER_REGISTRY-}netrabbitmqworker
@@ -75,7 +75,9 @@ services:
       context: .
       dockerfile: NetRabbitmq.Worker/Dockerfile
     environment:
-      DOTNET_RUNNING_IN_CONTAINER: true
+      RabbitMQSettings__Host: rabbit_srv
+      MongoDatabaseSettings__ConnectionString: mongodb://mongodb_srv:27017
+      MongoDatabaseSettings__DatabaseName: message
 
 networks:
   netrabbitmq:

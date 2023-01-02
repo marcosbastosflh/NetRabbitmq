@@ -1,7 +1,6 @@
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using NetRabbitmq.Shared;
-using NetRabbitmq.Worker.Models;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System.Text;
@@ -13,26 +12,25 @@ namespace NetRabbitmq.Worker
     {
         private readonly ILogger<Worker> _logger;
         private readonly IMongoCollection<MessageModel> _messageCollection;
+        private readonly RabbitMQSettings _rabbitmqSettings;
 
-        public Worker(ILogger<Worker> logger, IOptions<MessageDatabaseSettings> dabaseSettings)
+        public Worker(ILogger<Worker> logger, IOptions<Shared.MongoDatabaseSettings> dabaseSettings, IOptions<RabbitMQSettings> rabbitmqSettings)
         {
             _logger = logger;
-            // TODO: fix localhost on docker
+            _rabbitmqSettings = rabbitmqSettings.Value;
+
             var mongoClient = new MongoClient(dabaseSettings.Value.ConnectionString);
             var mongoDatabase = mongoClient.GetDatabase(dabaseSettings.Value.DatabaseName);
-            _messageCollection = mongoDatabase.GetCollection<MessageModel>("task_queue");
+            _messageCollection = mongoDatabase.GetCollection<MessageModel>(_rabbitmqSettings.Queue);
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            string? isDOcker = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER");
-            var host = String.IsNullOrEmpty(isDOcker) ? "localhost" : "rabbit_srv";
-
-            var factory = new ConnectionFactory() { HostName = host };
+            var factory = new ConnectionFactory() { HostName = _rabbitmqSettings.Host };
             using (var connection = factory.CreateConnection())
             using (var channel = connection.CreateModel())
             {
-                channel.QueueDeclare(queue: "task_queue",
+                channel.QueueDeclare(queue: _rabbitmqSettings.Queue,
                                      durable: true,
                                      exclusive: false,
                                      autoDelete: false,
@@ -58,7 +56,7 @@ namespace NetRabbitmq.Worker
                         _logger.LogInformation(" [x] Received {0}", JsonSerializer.Serialize(obj));
                         channel.BasicAck(deliveryTag: ea.DeliveryTag, multiple: false);
                     };
-                    channel.BasicConsume(queue: "task_queue",
+                    channel.BasicConsume(queue: _rabbitmqSettings.Queue,
                                          autoAck: false,
                                          consumer: consumer);
 
