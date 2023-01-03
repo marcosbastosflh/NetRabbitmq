@@ -1,4 +1,5 @@
-using Microsoft.Extensions.Options;
+using MongoDB.Bson;
+using MongoDB.Driver;
 using NetRabbitmq.Shared;
 using RabbitMQ.Client;
 using System.Text;
@@ -49,5 +50,19 @@ app.MapPost("/send", (string bodydto) =>
     return Results.Ok();
 })
 .WithName("SendMessage");
+
+app.MapGet("/", async () =>
+{
+    var rabbitmqSettings = builder.Configuration.GetSection("RabbitMQSettings").Get<RabbitMQSettings>();
+    var dabaseSettings = builder.Configuration.GetSection("MongoSettings").Get<MongoSettings>();
+    var mongoClient = new MongoClient(dabaseSettings.ConnectionString);
+    var mongoDatabase = mongoClient.GetDatabase(dabaseSettings.DatabaseName);
+    var messageCollection = mongoDatabase.GetCollection<MessageModel>(rabbitmqSettings.Queue);
+
+    var documents = await messageCollection.Find<MessageModel>(new BsonDocument()).ToListAsync();
+
+    return Results.Ok(documents);
+})
+.WithName("GetMessages");
 
 app.Run();

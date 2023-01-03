@@ -14,7 +14,7 @@ namespace NetRabbitmq.Worker
         private readonly IMongoCollection<MessageModel> _messageCollection;
         private readonly RabbitMQSettings _rabbitmqSettings;
 
-        public Worker(ILogger<Worker> logger, IOptions<Shared.MongoDatabaseSettings> dabaseSettings, IOptions<RabbitMQSettings> rabbitmqSettings)
+        public Worker(ILogger<Worker> logger, IOptions<Shared.MongoSettings> dabaseSettings, IOptions<RabbitMQSettings> rabbitmqSettings)
         {
             _logger = logger;
             _rabbitmqSettings = rabbitmqSettings.Value;
@@ -45,13 +45,13 @@ namespace NetRabbitmq.Worker
                 {
                     _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
                     var consumer = new EventingBasicConsumer(channel);
-                    consumer.Received += (sender, ea) =>
+                    consumer.Received += async (sender, ea) =>
                     {
                         var body = ea.Body.ToArray();
                         var message = Encoding.UTF8.GetString(body);
                         var obj = JsonSerializer.Deserialize<MessageModel>(message);
-
-                        _messageCollection.InsertOneAsync(obj);
+                        if (obj is not null)
+                            await _messageCollection.InsertOneAsync(obj);
 
                         _logger.LogInformation(" [x] Received {0}", JsonSerializer.Serialize(obj));
                         channel.BasicAck(deliveryTag: ea.DeliveryTag, multiple: false);

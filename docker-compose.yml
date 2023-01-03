@@ -61,6 +61,8 @@ services:
       dockerfile: NetRabbitmq.Api/Dockerfile
     environment:
       RabbitMQSettings__Host: rabbit_srv
+      MongoSettings__ConnectionString: mongodb://mongodb_srv:27017
+      MongoSettings__DatabaseName: message
 
   netrabbitmq.worker:
     image: ${DOCKER_REGISTRY-}netrabbitmqworker
@@ -76,8 +78,8 @@ services:
       dockerfile: NetRabbitmq.Worker/Dockerfile
     environment:
       RabbitMQSettings__Host: rabbit_srv
-      MongoDatabaseSettings__ConnectionString: mongodb://mongodb_srv:27017
-      MongoDatabaseSettings__DatabaseName: message
+      MongoSettings__ConnectionString: mongodb://mongodb_srv:27017
+      MongoSettings__DatabaseName: message
 
 networks:
   netrabbitmq:

@@ -5,7 +5,7 @@ IHost host = Host.CreateDefaultBuilder(args)
     .ConfigureServices((hostContext, services) =>
     {
         IConfiguration configuration = hostContext.Configuration;
-        services.Configure<MongoDatabaseSettings>(configuration.GetSection(nameof(MongoDatabaseSettings)));
+        services.Configure<MongoSettings>(configuration.GetSection(nameof(MongoSettings)));
         services.Configure<RabbitMQSettings>(configuration.GetSection(nameof(RabbitMQSettings)));
         services.AddHostedService<Worker>();
     })
