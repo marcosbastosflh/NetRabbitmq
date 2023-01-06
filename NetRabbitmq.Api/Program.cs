@@ -1,3 +1,5 @@
+using MongoDB.Bson;
+using MongoDB.Driver;
 using NetRabbitmq.Shared;
 using RabbitMQ.Client;
 using System.Text;
@@ -22,14 +24,13 @@ if (app.Environment.IsDevelopment())
 
 app.MapPost("/send", (string bodydto) =>
 {
-    string? isDOcker = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER");
-    var host = String.IsNullOrEmpty(isDOcker) ? "localhost" : "rabbit_srv";
+    var rabbitMQSettings = builder.Configuration.GetSection("RabbitMQSettings").Get<RabbitMQSettings>();
 
-    var factory = new ConnectionFactory() { HostName = host };
+    var factory = new ConnectionFactory() { HostName = rabbitMQSettings.Host };
     using (var connection = factory.CreateConnection())
     using (var channel = connection.CreateModel())
     {
-        channel.QueueDeclare(queue: "task_queue",
+        channel.QueueDeclare(queue: rabbitMQSettings.Queue,
                              durable: true,
                              exclusive: false,
                              autoDelete: false,
@@ -42,12 +43,26 @@ app.MapPost("/send", (string bodydto) =>
         properties.Persistent = true;
 
         channel.BasicPublish(exchange: "",
-                             routingKey: "task_queue",
+                             routingKey: rabbitMQSettings.Queue,
                              basicProperties: properties,
                              body: body);
     }
     return Results.Ok();
 })
 .WithName("SendMessage");
+
+app.MapGet("/", async () =>
+{
+    var rabbitmqSettings = builder.Configuration.GetSection("RabbitMQSettings").Get<RabbitMQSettings>();
+    var dabaseSettings = builder.Configuration.GetSection("MongoSettings").Get<MongoSettings>();
+    var mongoClient = new MongoClient(dabaseSettings.ConnectionString);
+    var mongoDatabase = mongoClient.GetDatabase(dabaseSettings.DatabaseName);
+    var messageCollection = mongoDatabase.GetCollection<MessageModel>(rabbitmqSettings.Queue);
+
+    var documents = await messageCollection.Find<MessageModel>(new BsonDocument()).ToListAsync();
+
+    return Results.Ok(documents);
+})
+.WithName("GetMessages");
 
 app.Run();
