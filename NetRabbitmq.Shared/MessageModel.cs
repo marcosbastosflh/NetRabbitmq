@@ -1,4 +1,5 @@
 ﻿using MongoDB.Bson;
+using System.Net;
 
 namespace NetRabbitmq.Shared
 {
@@ -7,6 +8,7 @@ namespace NetRabbitmq.Shared
         public ObjectId Id { get; init; }
         public DateTime SendTime { get; init; } = DateTime.Now;
         public string From { get; init; } = Environment.MachineName;
+        public string Ip { get; init; } = Dns.GetHostEntry(Dns.GetHostName()).AddressList[0].ToString();
         public string? Body { get; init; }
         public MessageModel(string body)
         {

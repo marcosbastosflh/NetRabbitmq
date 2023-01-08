@@ -53,7 +53,7 @@ namespace NetRabbitmq.Worker
                         if (obj is not null)
                             await _messageCollection.InsertOneAsync(obj);
 
-                        _logger.LogInformation(" [x] Received {0}", JsonSerializer.Serialize(obj));
+                        _logger.LogInformation(" [x] Received {0}", message);
                         channel.BasicAck(deliveryTag: ea.DeliveryTag, multiple: false);
                     };
                     channel.BasicConsume(queue: _rabbitmqSettings.Queue,
